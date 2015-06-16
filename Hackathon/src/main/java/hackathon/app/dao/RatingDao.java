@@ -55,7 +55,7 @@ public class RatingDao {
         for (int i = 0; i < array.length(); i++) {
             try {
                 final JSONObject object = array.getJSONObject(i);
-                ratings.add(new Rating(object.getLong("id"), object.getLong("event_id"), object.getLong("user_id"), object.getInt("value")));
+                ratings.add(new Rating(object.getLong("id"), object.getLong("user_id"), object.getLong("event_id"), object.getInt("value")));
             } catch (JSONException e) {
                 Log.e("RatingDao", "Failed to create ratings array");
                 return new ArrayList<Rating>();

@@ -135,9 +135,10 @@ public final class UserDao {
 
     }
 
-    private JSONArray getFacebookFriends() {
+    public JSONArray getFacebookFriends() {
         final HttpClient httpClient = new DefaultHttpClient();
         final HttpGet httpGet = new HttpGet("https://graph.facebook.com/me/friends?access_token=" + AccessToken.getCurrentAccessToken().getToken());
+        Log.v("GetFacebookFriends", httpGet.getURI().toString());
         httpGet.setHeader("Accept", "application/json");
 
         final JSONObject jsonObject;
@@ -147,14 +148,9 @@ public final class UserDao {
             final HttpEntity entity = httpResponse.getEntity();
             final String result = EntityUtils.toString(entity);
             jsonObject = new JSONObject(result);
+            JSONArray jsonArray = jsonObject.getJSONArray("data");
+            return jsonArray;
         } catch (Exception e) {
-            Log.e("UserDao", "Failed to get facebook friends");
-            return new JSONArray();
-        }
-
-        try {
-            return jsonObject.getJSONArray("data");
-        } catch (JSONException e) {
             Log.e("UserDao", "Failed to get facebook friends");
             return new JSONArray();
         }

@@ -3,6 +3,7 @@
     package="hackathon.app" >
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -29,12 +30,15 @@
             android:name=".event.EventsActivity"
             android:label="Events" />
         <activity
-            android:name=".db.EventActivity"
+            android:name=".event.EventActivity"
             android:label="Event" >
         </activity>
         <activity
             android:name=".RecordsActivity"
             android:label="Records" >
+        </activity>
+        <activity android:name=".FriendsActivity"
+                  android:label="Friends">
         </activity>
         <activity
             android:name="com.facebook.FacebookActivity"

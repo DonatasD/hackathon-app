@@ -1,7 +1,5 @@
 package hackathon.app.dao;
 
-import android.text.format.Time;
-
 import java.util.Date;
 
 /**

@@ -1,14 +1,11 @@
-package hackathon.app.db;
+package hackathon.app.event;
 
 import android.app.DatePickerDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.text.Html;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +19,7 @@ import hackathon.app.CurrentUserHolder;
 import hackathon.app.MainActivity;
 import hackathon.app.R;
 import hackathon.app.dao.*;
+import hackathon.app.notifications.NotificationHandler;
 
 import java.util.Calendar;
 import java.util.List;
@@ -32,16 +30,7 @@ public class EventActivity extends FragmentActivity {
     private long _eventId;
 
     private DatePickerDialog datePickerDialog;
-    /*
-    Create a bundle for an intent
 
-    Intent intent = new Intent(FirstActivity.this, SecondActivity.class);
-    Bundle b = new Bundle();
-    b.putInt("key", 1); //Your id
-    intent.putExtras(b); //Put your id to your next Intent
-    startActivity(intent);
-    finish();
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,15 +50,49 @@ public class EventActivity extends FragmentActivity {
                 Calendar calendar = Calendar.getInstance();
                 calendar.set(year, monthOfYear, dayOfMonth);
                 Long timestamp = calendar.getTime().getTime();
-                Long userId = new CurrentUserHolder(getApplicationContext()).getCurrentUserId();
+                final Long userId = new CurrentUserHolder(getApplicationContext()).getCurrentUserId();
+
+                new AsyncTask<Void, Void, Event>() {
+                    @Override
+                    protected Event doInBackground(Void... params) {
+                        EventDao eventDao = new EventDao();
+                        List<Event> events = eventDao.getEvents();
+                        for (Event event : events) {
+                            if (_eventId == event.getId()) {
+                                return event;
+                            }
+                        }
+                        return null;
+                    }
+                    @Override
+                    protected void onPostExecute(final Event event) {
+                        new AsyncTask<Void, Void, String>() {
+                            @Override
+                            protected String doInBackground(Void... params) {
+                                UserDao userDao = new UserDao(getApplicationContext());
+                                List<User> users = userDao.getUsers();
+                                for (User user : users) {
+                                    if (userId == user.getId()) {
+                                        return user.getName() + " is attending " + event.getName();
+                                    }
+                                }
+                                return "";
+                            }
+                            @Override
+                            protected void onPostExecute(String message) {
+                                NotificationHandler notificationHandler = new NotificationHandler(getApplicationContext());
+                                notificationHandler.show("Friend Attend Event", message, _eventId);
+                            }
+                        }.execute();
+                    }
+                }.execute();
             }
 
-        },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
+        }, newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
 
         Bundle b = getIntent().getExtras();
         _eventId = b.getLong("eventId");
         fetchEvent(_eventId);
-
 
 
         setContentView(R.layout.activity_event);
@@ -159,7 +182,7 @@ public class EventActivity extends FragmentActivity {
             protected void onPostExecute(List<Event> events) {
                 ListIterator<Event> iter = events.listIterator();
                 Event event = null;
-                while(iter.hasNext()) {
+                while (iter.hasNext()) {
                     event = iter.next();
                     if (event.getId() == id) {
                         break;
@@ -168,11 +191,6 @@ public class EventActivity extends FragmentActivity {
                 populateEventData(event);
             }
         }.execute();
-    }
-
-    public void confirmAttendance(View btn) {
-        int id = 1; //dummy user ID
-        
     }
 
     private void populateEventData(Event event) {

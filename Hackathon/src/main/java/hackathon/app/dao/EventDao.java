@@ -75,8 +75,9 @@ public final class EventDao {
                 }
                 String email = eventJSON.getString("Email");
                 String info = eventJSON.getString("Session information");
+                String category = eventJSON.getString("Record Type_Displayed Value");
 
-                Event event = new Event(id, name, description, postcode, houseName, street, town, disabledAccess, email, info);
+                Event event = new Event(id, name, description, postcode, houseName, street, town, disabledAccess, email, info, category);
                 eventList.add(event);
 
             } catch (JSONException e) {

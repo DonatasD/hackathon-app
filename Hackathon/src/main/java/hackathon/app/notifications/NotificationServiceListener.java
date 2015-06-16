@@ -1,10 +1,10 @@
 package hackathon.app.notifications;
 
-import java.util.List;
-
 import hackathon.app.dao.Event;
 import hackathon.app.dao.Ticket;
 import hackathon.app.dao.User;
+
+import java.util.List;
 
 /**
  * Created by Maxim on 13/06/2015.

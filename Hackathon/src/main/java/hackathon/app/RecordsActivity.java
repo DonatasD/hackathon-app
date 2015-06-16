@@ -10,7 +10,6 @@ import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import hackathon.app.R;
 import hackathon.app.db.HackathonTestDbHelper;
 import hackathon.app.db.Record;
 import hackathon.app.db.RecordDao;

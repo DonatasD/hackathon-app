@@ -1,6 +1,7 @@
 package hackathon.app.event;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ public class EventListAdapter extends ArrayAdapter<String>{
 
     private final Context context;
     private final ArrayList<String> values;
+    private ArrayList<String> categories;
 
     public EventListAdapter(Context context, ArrayList<String> values) {
         super(context, R.layout.activity_events, values);
@@ -35,15 +37,20 @@ public class EventListAdapter extends ArrayAdapter<String>{
         ImageView imageView = (ImageView) rowView.findViewById(R.id.logo);
         textView.setText(values.get(position));
 
-        imageView.setImageResource(R.drawable.ball);
+
+        Log.v("EventListAdapter", categories.get(position));
+        imageView.setImageResource(EventCategory.getImageByCategory(categories.get(position)));
 
         return rowView;
     }
 
-    public void addDataToList(ArrayList<String> newData) {
-        for (String value: newData) {
+    public void addDataToList(ArrayList<String> eventDescription, ArrayList<String> eventCategory ) {
+        this.values.clear();
+        for (String value: eventDescription) {
             this.values.add(value);
         }
+        this.categories = eventCategory;
         this.notifyDataSetChanged();
     }
+
 }

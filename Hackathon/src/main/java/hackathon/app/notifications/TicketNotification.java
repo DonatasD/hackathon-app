@@ -4,27 +4,19 @@ package hackathon.app.notifications;
  * Created by Maxim on 13/06/2015.
  */
 
-import android.app.PendingIntent;
-import android.content.Context;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import hackathon.app.CurrentUserHolder;
+import hackathon.app.dao.*;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
-
-import hackathon.app.CurrentUserHolder;
-import hackathon.app.dao.Event;
-import hackathon.app.dao.EventDao;
-import hackathon.app.dao.Ticket;
-import hackathon.app.dao.TicketDao;
-import hackathon.app.dao.User;
-import hackathon.app.dao.UserDao;
 
 
 public class TicketNotification {

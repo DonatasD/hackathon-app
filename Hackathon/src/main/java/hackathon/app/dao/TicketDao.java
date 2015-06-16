@@ -1,9 +1,6 @@
 package hackathon.app.dao;
 
 import android.util.Log;
-
-import com.google.gson.Gson;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;

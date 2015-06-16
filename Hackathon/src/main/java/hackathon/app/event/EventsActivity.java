@@ -6,12 +6,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
-import com.facebook.AccessToken;
 import com.facebook.FacebookSdk;
 import hackathon.app.MainActivity;
 import hackathon.app.dao.Event;
 import hackathon.app.dao.EventDao;
-import hackathon.app.db.EventActivity;
+import hackathon.app.security.Authentication;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +28,9 @@ public class EventsActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
 
-        //if (AccessToken.getCurrentAccessToken() == null) {
-            //startActivity(new Intent(this, MainActivity.class));
-        //}
+        if (!Authentication.isLoggedIn(this)) {
+            startActivity(new Intent(this, MainActivity.class));
+        }
 
         this.eventListAdapter = new EventListAdapter(this, listViewData);
         setListAdapter(this.eventListAdapter);
@@ -45,8 +44,10 @@ public class EventsActivity extends ListActivity {
 
             protected void onPostExecute(List<Event> result) {
                 final ArrayList<String> eventNames = new ArrayList<String>();
+                final ArrayList<String> eventCategory = new ArrayList<String>();
                 for (Event event: result) {
                     eventNames.add(event.getName());
+                    eventCategory.add(event.getCategory());
                     // Limit hack
                     int count = 0;
                     if (count > 50) {
@@ -55,9 +56,10 @@ public class EventsActivity extends ListActivity {
                     count++;
                     listIds.add(event.getId());
                 }
-                eventListAdapter.addDataToList(eventNames);
+                eventListAdapter.addDataToList(eventNames,eventCategory);
             }
         }.execute();
+
     }
 
     protected void onListItemClick(ListView l, View v, int position, long id) {
@@ -67,7 +69,7 @@ public class EventsActivity extends ListActivity {
         Bundle b = new Bundle();
         b.putLong("eventId", listIds.get(position)); //Your id
         eventView.putExtras(b); //Put your id to your next Intent
-            startActivity(eventView);
+        startActivity(eventView);
     }
 
 }

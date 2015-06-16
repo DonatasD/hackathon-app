@@ -15,8 +15,9 @@ public class Event {
     Boolean disabledAccess;
     String email;
     String info;
+    String category;
 
-    public Event(Long id, String name, String description, String postcode, String houseName, String street, String town, Boolean disabledAccess, String email, String info) {
+    public Event(Long id, String name, String description, String postcode, String houseName, String street, String town, Boolean disabledAccess, String email, String info, String category) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -27,6 +28,7 @@ public class Event {
         this.disabledAccess = disabledAccess;
         this.email = email;
         this.info = info;
+        this.category = category;
     }
 
     public Long getId() {
@@ -69,6 +71,10 @@ public class Event {
         return info;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
     @Override
     public String toString() {
         return "Event{" +
@@ -82,6 +88,7 @@ public class Event {
                 ", disabledAccess=" + disabledAccess +
                 ", email='" + email + '\'' +
                 ", info='" + info + '\'' +
+                ", category='" + category + '\'' +
                 '}';
     }
 }

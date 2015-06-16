@@ -15,5 +15,40 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="30dp"
             android:layout_marginBottom="30dp" />
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_alignParentLeft="true" android:layout_alignParentStart="true"
+            android:layout_below="@+id/login_button">
+        <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/imageView" android:layout_gravity="center_horizontal"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView" android:layout_gravity="center_horizontal" android:enabled="true"
+                android:textStyle="bold"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView2" android:layout_gravity="center_horizontal"/>
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Current Events"
+                    android:id="@+id/button" android:layout_gravity="center_horizontal" android:visibility="invisible"/>
+            <Button
+                    android:layout_width="143dp"
+                    android:layout_height="wrap_content"
+                    android:text="Friends"
+                    android:id="@+id/button2" android:layout_gravity="center_horizontal" android:visibility="invisible"/>
+        </LinearLayout>
+    </LinearLayout>
 
 </RelativeLayout>

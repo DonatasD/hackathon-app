@@ -54,5 +54,13 @@ public class Rating {
         return value;
     }
 
-
+    @Override
+    public String toString() {
+        return "Rating{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", eventId=" + eventId +
+                ", value=" + value +
+                '}';
+    }
 }

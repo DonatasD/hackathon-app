@@ -1,39 +1,26 @@
 package hackathon.app;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Intent;
-import android.hardware.usb.UsbRequest;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import com.facebook.*;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
-import hackathon.app.dao.Event;
-import hackathon.app.dao.EventDao;
-import hackathon.app.dao.Rating;
-import hackathon.app.dao.RatingDao;
-import hackathon.app.dao.Ticket;
-import hackathon.app.dao.TicketDao;
 import hackathon.app.dao.User;
 import hackathon.app.dao.UserDao;
-import hackathon.app.db.EventActivity;
 import hackathon.app.event.EventsActivity;
 import hackathon.app.facebook.FacebookService;
-import hackathon.app.notifications.NotificationServiceListener;
-import hackathon.app.notifications.TicketNotification;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
-import hackathon.app.notifications.TicketNotification;
 
 public class MainActivity extends Activity {
 
@@ -43,9 +30,13 @@ public class MainActivity extends Activity {
 
     private Intent eventsActivityIntent;
 
+    private Intent friendsActivityIntent;
+
     private TokenTracker tokenTracker;
 
     private UserDao userDao;
+
+    private CurrentUserHolder currentUserHolder;
 
     private final FacebookService facebookService = new FacebookService();
 
@@ -57,69 +48,99 @@ public class MainActivity extends Activity {
 
         userDao = new UserDao(getApplicationContext());
         eventsActivityIntent = new Intent(this, EventsActivity.class);
+        friendsActivityIntent = new Intent(this, FriendsActivity.class);
         mainActivityIntent = new Intent(this, MainActivity.class);
         callbackManager = CallbackManager.Factory.create();
         tokenTracker = new TokenTracker();
+        currentUserHolder = new CurrentUserHolder(this);
 
         if (AccessToken.getCurrentAccessToken() != null) {
-            startActivity(eventsActivityIntent);
+            final Button eventListButton = (Button) findViewById(R.id.button);
+            eventListButton.setVisibility(View.VISIBLE);
+            eventListButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(eventsActivityIntent);
+                }
+            });
+            final Button friendsButton = (Button) findViewById(R.id.button2);
+            friendsButton.setVisibility(View.VISIBLE);
+            friendsButton.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    startActivity(friendsActivityIntent);
+                }
+            });
+
+            final ImageView imageView = (ImageView) findViewById(R.id.imageView);
+            final TextView textView = (TextView) findViewById(R.id.textView);
+            final FacebookService facebookService = new FacebookService();
+            facebookService.getUserInfo(new GraphRequest.GraphJSONObjectCallback() {
+                @Override
+                public void onCompleted(JSONObject jsonObject, GraphResponse graphResponse) {
+                    try {
+                        String facebookId = jsonObject.getString("id");
+                        facebookService.downloadFacebookImage(imageView, facebookId);
+                        String welcomeMessage = "Welcome " + jsonObject.getString("name");
+                        textView.setText(welcomeMessage);
+                        textView.setEnabled(true);
+
+                        new AsyncTask<Void, Void, JSONArray>() {
+                            @Override
+                            protected JSONArray doInBackground(Void... params) {
+                                return userDao.getFacebookFriends();
+                            }
+
+                            @Override
+                            protected void onPostExecute(JSONArray result) {
+                                final TextView textView1 = (TextView) findViewById(R.id.textView2);
+                                String message = "You have " + result.length() + " friends using this application";
+                                textView1.setText(message);
+                            }
+                        }.execute();
+
+                    } catch (JSONException e) {
+                        Log.e("Error", e.getMessage());
+                    }
+
+                }
+            });
+
+            if (currentUserHolder.getCurrentUserId() == -1) {
+                new AsyncTask<Void, Void, Void>() {
+
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        FacebookService facebookService = new FacebookService();
+                        facebookService.getUserInfo(new GraphRequest.GraphJSONObjectCallback() {
+
+                            @Override
+                            public void onCompleted(JSONObject jsonObject, GraphResponse graphResponse) {
+                                try {
+                                    List<User> users = userDao.getUsers();
+                                    String facebookId = jsonObject.getString("id");
+                                    for (User user: users) {
+                                       if (user.getFacebookId().equals(facebookId)) {
+                                           currentUserHolder.setCurrentUserId(user.getId());
+                                       }
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                        });
+                        return null;
+                    }
+
+                }.execute();
+            }
         }
 
         final LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.setReadPermissions("user_friends");
         loginButton.registerCallback(callbackManager, new FacebookLoginCallback());
-
-        final Ticket ticket = new Ticket();
-        ticket.setUserId(new CurrentUserHolder(getApplicationContext()).getCurrentUserId());
-        SimpleDateFormat curFormater = new SimpleDateFormat("dd/MM/yyyy");
-        try {
-            Date dateObj = curFormater.parse("01/01/2017");
-            ticket.setDate(dateObj);
-        }
-        catch(Exception e) {
-
-        }
-
-        ticket.setEventId(1);
-
-        final TicketDao ticketDao = new TicketDao();
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                ticketDao.addTicket(ticket);
-
-                return null;
-            }
-        }.execute();
-
-        try {
-            fireNotificationService();
-            Log.v("a", "a");
-        } catch (Exception e) {
-            //Log.v("NOTIFICATION EXCEPTION: ", e.getMessage());
-        }
-    }
-
-    private void fireNotificationService() {
-        TicketNotification.service().start(getApplicationContext(), EventActivity.class, userDao);
-
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                TicketNotification.service().run();
-                return null;
-            }
-
-            protected void onPostExecute() {
-            }
-
-            public void startMyTask() {
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-                    executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                else
-                    execute();
-            }
-        }.startMyTask();
     }
 
     @Override
@@ -139,7 +160,6 @@ public class MainActivity extends Activity {
         @Override
         public void onSuccess(LoginResult loginResult) {
             Log.v("Facebook Login", "success");
-            Boolean test;
 
             facebookService.getUserInfo(new GraphRequest.GraphJSONObjectCallback() {
                 @Override
@@ -153,11 +173,6 @@ public class MainActivity extends Activity {
                     }
                 }
             });
-
-            // TODO check if registered
-            // TODO register
-            // TODO upload friends
-            // TODO redirect
         }
 
         @Override
@@ -183,14 +198,5 @@ public class MainActivity extends Activity {
                 startActivity(eventsActivityIntent);
             }
         }
-    }
-
-    public void testEvent(View caller) {
-        Intent eventView = new Intent(this, EventActivity.class);
-        Bundle b = new Bundle();
-        b.putInt("eventId", 1); //Your id
-        eventView.putExtras(b); //Put your id to your next Intent
-        startActivity(eventView);
-        finish();
     }
 }
